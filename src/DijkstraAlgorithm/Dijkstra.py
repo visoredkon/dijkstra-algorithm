@@ -16,22 +16,12 @@ class Dijkstra:
         self.distances[start] = 0
         self.previous[start] = start
 
-        superscript_map = {
-            "0": "⁰",
-            "1": "¹",
-            "2": "²",
-            "3": "³",
-            "4": "⁴",
-            "5": "⁵",
-            "6": "⁶",
-            "7": "⁷",
-            "8": "⁸",
-            "9": "⁹",
-        }
+        superscript_map = dict(zip("0123456789", "⁰¹²³⁴⁵⁶⁷⁸⁹"))
 
         table_header = [f"   {vertex}   " for vertex in self.graph.vertices]
         table_header.insert(0, "Visited")
         table_data = []
+        temp_row = []
 
         for _ in self.graph.vertices:
             unvisited = set(self.distances) - self.visited
@@ -54,15 +44,22 @@ class Dijkstra:
 
             self.visited.add(current_vertex)
             table_data.append([current_vertex])
-            [
-                table_data[-1].append(
-                    "".join(superscript_map[i] for i in str(weight))
-                    + self.previous[vertex]
-                    if weight != float("infinity")
-                    else "∞"
-                )
-                for vertex, weight in self.distances.items()
-            ]
+
+            for vertex, weight in self.distances.items():
+                append_value = " "
+
+                if vertex == current_vertex and weight != float("infinity"):
+                    temp_row.append(vertex)
+                    append_value = f"|{''.join(superscript_map[i] for i in str(weight))}{self.previous[vertex]}|"
+
+                if vertex not in temp_row:
+                    append_value = (
+                        "∞"
+                        if weight == float("infinity")
+                        else f" {''.join(superscript_map[i] for i in str(weight))}{self.previous[vertex]} "
+                    )
+
+                table_data[-1].append(append_value)
 
         table = tabulate(
             table_data,
