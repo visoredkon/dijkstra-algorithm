@@ -10,31 +10,23 @@ class Dijkstra:
         self.distances[start] = 0
 
         for _ in self.graph.vertices:
-            current_vertex = min(
-                set(self.distances) - self.visited, key=self.distances.get
-            )
+            unvisited = set(self.distances) - self.visited
+            current_vertex = min(unvisited, key=self.distances.get)
 
-            current_edge = self.graph.edges[current_vertex].copy()
+            current_edge = self.graph.edges[current_vertex]
 
-            for _ in range(len(current_edge)):
-                current_visited = min(current_edge, key=lambda x: x["weight"])
+            for vertex in current_edge:
+                vertex_to = vertex["to"]
+                vertex_weight = vertex["weight"]
 
-                current_weight = current_visited["weight"]
-                current_vertex_distance = self.distances[current_vertex]
-                next_vertex_distance = self.distances[current_visited["to"]]
+                new_distance = self.distances[current_vertex] + vertex_weight
 
-                if next_vertex_distance > current_vertex_distance + current_weight:
-                    self.distances[current_visited["to"]] = (
-                        current_vertex_distance + current_weight
-                    )
-                    self.paths[current_visited["to"]] = self.paths[current_vertex] + [
+                if self.distances[vertex_to] > new_distance:
+                    self.distances[vertex_to] = new_distance
+                    self.paths[vertex_to] = self.paths[current_vertex] + [
                         current_vertex
                     ]
 
-                current_edge.remove(current_visited)
-
-            print(current_vertex, self.distances)
-
             self.visited.add(current_vertex)
 
-        return self.paths[finish] + [finish], self.distances[finish]
+        return " → ".join(self.paths[finish] + [finish]), self.distances[finish]
