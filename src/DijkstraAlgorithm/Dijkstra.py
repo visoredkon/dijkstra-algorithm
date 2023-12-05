@@ -14,9 +14,6 @@ class Dijkstra:
                 set(self.distances) - self.visited, key=self.distances.get
             )
 
-            if current_vertex == finish:
-                continue
-
             current_edge = self.graph.edges[current_vertex].copy()
 
             for _ in range(len(current_edge)):
