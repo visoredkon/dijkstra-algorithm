@@ -1,3 +1,6 @@
+from tabulate import tabulate
+
+
 class Dijkstra:
     def __init__(self, graph):
         self.graph = graph
@@ -8,6 +11,10 @@ class Dijkstra:
 
     def find_path(self, start, finish):
         self.distances[start] = 0
+
+        table_header = [f"   {vertex}   " for vertex in self.graph.vertices]
+        table_header.insert(0, "Visited")
+        table_data = []
 
         for _ in self.graph.vertices:
             unvisited = set(self.distances) - self.visited
@@ -28,5 +35,15 @@ class Dijkstra:
                     ]
 
             self.visited.add(current_vertex)
+            table_data.append([current_vertex])
+            [table_data[-1].append(f"{weight}") for _, weight in self.distances.items()]
 
-        return " → ".join(self.paths[finish] + [finish]), self.distances[finish]
+        table = tabulate(
+            table_data,
+            headers=table_header,
+            stralign="center",
+            numalign="center",
+            tablefmt="rounded_grid",
+        )
+
+        return table, " → ".join(self.paths[finish] + [finish]), self.distances[finish]

@@ -28,6 +28,8 @@ graph.add_edge(from_vertex="G", to_vertex="I", weight=8)
 
 dijkstra = Dijkstra(graph)
 
-path, weight = dijkstra.find_path(start="A", finish="I")
+table, path, weight = dijkstra.find_path(start="A", finish="I")
 
-print(f"Shortest path: {path}\nWeight: {weight}")
+print(table)
+
+print(f"\nShortest path: {path}\nWeight: {weight}")
