@@ -3,113 +3,142 @@ from matplotlib import pyplot as plt
 
 from tabulate import tabulate
 
+from DijkstraAlgorithm.Graph import Graph
+
 
 class Dijkstra:
     def __init__(self, graph):
-        self.graph = graph
-        self.distances = {vertex: float("infinity") for vertex in self.graph.vertices}
-        self.paths = {vertex: [] for vertex in self.graph.vertices}
-        self.visited = set()
-        self.previous = {vertex: None for vertex in self.graph.vertices}
+        if not isinstance(graph, Graph):
+            raise Exception("Graph must be an instance of the Graph class.")
+
+        self.__graph = graph
+
+        self.__distances = {
+            vertex: float("infinity") for vertex in self.__graph.get_vertices()
+        }
+        self.__paths = {vertex: [] for vertex in self.__graph.get_vertices()}
+        self.__visited = set()
+        self.__previous = {vertex: None for vertex in self.__graph.get_vertices()}
+
+        self.__superscript_map = dict(zip("0123456789", "⁰¹²³⁴⁵⁶⁷⁸⁹"))
+
+    def __reinitialize(self):
+        self.__table_header = ["Visited"] + [
+            f"   {vertex}   " for vertex in self.__graph.get_vertices()
+        ]
+        self.__table_data = []
+        self.__temp = []
+
+        self.__distances = {
+            vertex: float("infinity") for vertex in self.__graph.get_vertices()
+        }
+        self.__paths = {vertex: [] for vertex in self.__graph.get_vertices()}
+        self.__visited = set()
+        self.__previous = {vertex: None for vertex in self.__graph.get_vertices()}
 
     def find_path(self, start, finish):
-        self.distances[start] = 0
-        self.previous[start] = start
+        self.__reinitialize()
 
-        superscript_map = dict(zip("0123456789", "⁰¹²³⁴⁵⁶⁷⁸⁹"))
+        self.__distances[start] = 0
+        self.__previous[start] = start
 
-        table_header = [f"   {vertex}   " for vertex in self.graph.vertices]
-        table_header.insert(0, "Visited")
-        table_data = []
-        temp_row = []
+        for _ in self.__graph.get_vertices():
+            unvisited_vertices = set(self.__distances) - self.__visited
+            current = min(unvisited_vertices, key=self.__distances.get)
+            current_edges = self.__graph.get_edges()[current]
 
-        for _ in self.graph.vertices:
-            unvisited = set(self.distances) - self.visited
-            current_vertex = min(unvisited, key=self.distances.get)
+            for edge in current_edges:
+                vertex_to, weight = edge["to"], edge["weight"]
+                new_distance = self.__distances[current] + weight
 
-            current_edge = self.graph.edges[current_vertex]
+                if self.__distances[vertex_to] > new_distance:
+                    self.__distances[vertex_to] = new_distance
+                    self.__paths[vertex_to] = self.__paths[current] + [current]
+                    self.__previous[vertex_to] = current
 
-            for vertex in current_edge:
-                vertex_to = vertex["to"]
-                vertex_weight = vertex["weight"]
+            self.__visited.add(current)
+            self.__append_table_data(current)
 
-                new_distance = self.distances[current_vertex] + vertex_weight
+        return (
+            self.__formatted_table(),
+            " → ".join(self.__paths[finish] + [finish]),
+            self.__distances[finish],
+        )
 
-                if self.distances[vertex_to] > new_distance:
-                    self.distances[vertex_to] = new_distance
-                    self.paths[vertex_to] = self.paths[current_vertex] + [
-                        current_vertex
-                    ]
-                    self.previous[vertex_to] = current_vertex
+    def __append_table_data(self, current):
+        self.__table_data.append(
+            [current]
+            + [
+                self.__format_table_data(vertex, weight, current)
+                for vertex, weight in self.__distances.items()
+            ]
+        )
 
-            self.visited.add(current_vertex)
-            table_data.append([current_vertex])
+    def __format_table_data(self, vertex, weight, current):
+        if vertex == current and weight != float("infinity"):
+            self.__temp.append(vertex)
+            return f"|{''.join(self.__superscript_map[i] for i in str(weight))}{self.__previous[vertex]}|"
 
-            for vertex, weight in self.distances.items():
-                append_value = " "
+        if vertex in self.__temp:
+            return " "
 
-                if vertex == current_vertex and weight != float("infinity"):
-                    temp_row.append(vertex)
-                    append_value = f"|{''.join(superscript_map[i] for i in str(weight))}{self.previous[vertex]}|"
+        return (
+            "∞"
+            if weight == float("infinity")
+            else f" {''.join(self.__superscript_map[i] for i in str(weight))}{self.__previous[vertex]} "
+        )
 
-                if vertex not in temp_row:
-                    append_value = (
-                        "∞"
-                        if weight == float("infinity")
-                        else f" {''.join(superscript_map[i] for i in str(weight))}{self.previous[vertex]} "
-                    )
-
-                table_data[-1].append(append_value)
-
-        table = tabulate(
-            table_data,
-            headers=table_header,
+    def __formatted_table(self):
+        return tabulate(
+            self.__table_data,
+            headers=self.__table_header,
             stralign="center",
             numalign="center",
             tablefmt="rounded_grid",
         )
 
-        return table, " → ".join(self.paths[finish] + [finish]), self.distances[finish]
+    def visualize_graph(self, finish):
+        G = self.__build_networkx_graph()
 
-    def draw_graph(self, finish):
-        G = self._create_graph()
         plt.figure("Dijkstra Algorithm", figsize=(10, 5))
-        pos = nx.spring_layout(G, seed=28)
+
+        layout_position = nx.spring_layout(G, seed=28)
         edge_labels = nx.get_edge_attributes(G, "weight")
 
         for i, title in zip(
             [121, 122], ["Graph Before Dijkstra", "Graph After Dijkstra"]
         ):
-            self._plot_graph(G, pos, edge_labels, i, title)
+            self.__draw_graph(G, layout_position, edge_labels, i, title)
             if i == 122:
-                self._highlight_shortest_path(G, pos, finish)
+                self.__highlight_shortest_path(G, layout_position, finish)
 
         plt.tight_layout()
         plt.show()
 
-    def _create_graph(self):
+    def __build_networkx_graph(self):
         G = nx.Graph()
+
         G.add_edges_from(
             [
                 (vertex, edge["to"], {"weight": edge["weight"]})
-                for vertex in self.graph.vertices
-                for edge in self.graph.edges[vertex]
+                for vertex in self.__graph.get_vertices()
+                for edge in self.__graph.get_edges()[vertex]
             ]
         )
 
         return G
 
-    def _plot_graph(self, G, pos, edge_labels, i, title):
-        plt.subplot(i)
+    def __draw_graph(self, G, position, edge_labels, subplot_index, title):
+        plt.subplot(subplot_index)
         plt.title(title)
 
-        nx.draw(G, pos, with_labels=True)
-        nx.draw_networkx_edge_labels(G, pos, edge_labels=edge_labels)
+        nx.draw(G, position, with_labels=True)
+        nx.draw_networkx_edge_labels(G, position, edge_labels=edge_labels)
 
-    def _highlight_shortest_path(self, G, pos, finish):
-        shortest_path = self.paths[finish] + [finish]
+    def __highlight_shortest_path(self, G, position, finish):
+        shortest_path = self.__paths[finish] + [finish]
         shortest_path_edges = list(zip(shortest_path, shortest_path[1:]))
 
         nx.draw_networkx_edges(
-            G, pos, edgelist=shortest_path_edges, edge_color="red", width=2
+            G, position, edgelist=shortest_path_edges, edge_color="red", width=2
         )
