@@ -33,3 +33,5 @@ table, path, weight = dijkstra.find_path(start="A", finish="I")
 print(table)
 
 print(f"\nShortest path: {path}\nWeight: {weight}")
+
+dijkstra.draw_graph(finish="I")

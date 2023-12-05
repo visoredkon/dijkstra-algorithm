@@ -1,3 +1,6 @@
+import networkx as nx
+from matplotlib import pyplot as plt
+
 from tabulate import tabulate
 
 
@@ -70,3 +73,46 @@ class Dijkstra:
         )
 
         return table, " → ".join(self.paths[finish] + [finish]), self.distances[finish]
+
+    def draw_graph(self, finish):
+        G = self._create_graph()
+        plt.figure("Dijkstra Algorithm", figsize=(10, 5))
+        pos = nx.spring_layout(G, seed=28)
+        edge_labels = nx.get_edge_attributes(G, "weight")
+
+        for i, title in zip(
+            [121, 122], ["Graph Before Dijkstra", "Graph After Dijkstra"]
+        ):
+            self._plot_graph(G, pos, edge_labels, i, title)
+            if i == 122:
+                self._highlight_shortest_path(G, pos, finish)
+
+        plt.tight_layout()
+        plt.show()
+
+    def _create_graph(self):
+        G = nx.Graph()
+        G.add_edges_from(
+            [
+                (vertex, edge["to"], {"weight": edge["weight"]})
+                for vertex in self.graph.vertices
+                for edge in self.graph.edges[vertex]
+            ]
+        )
+
+        return G
+
+    def _plot_graph(self, G, pos, edge_labels, i, title):
+        plt.subplot(i)
+        plt.title(title)
+
+        nx.draw(G, pos, with_labels=True)
+        nx.draw_networkx_edge_labels(G, pos, edge_labels=edge_labels)
+
+    def _highlight_shortest_path(self, G, pos, finish):
+        shortest_path = self.paths[finish] + [finish]
+        shortest_path_edges = list(zip(shortest_path, shortest_path[1:]))
+
+        nx.draw_networkx_edges(
+            G, pos, edgelist=shortest_path_edges, edge_color="red", width=2
+        )
