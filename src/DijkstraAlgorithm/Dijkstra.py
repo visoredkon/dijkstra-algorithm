@@ -43,20 +43,22 @@ class Dijkstra:
 
         for _ in self.__graph.get_vertices():
             unvisited_vertices = set(self.__distances) - self.__visited
-            current = min(unvisited_vertices, key=self.__distances.get)
-            current_edges = self.__graph.get_edges()[current]
+            current_vertex = min(unvisited_vertices, key=self.__distances.get)
+            current_edges = self.__graph.get_edges()[current_vertex]
 
             for edge in current_edges:
                 vertex_to, weight = edge["to"], edge["weight"]
-                new_distance = self.__distances[current] + weight
+                new_distance = self.__distances[current_vertex] + weight
 
                 if self.__distances[vertex_to] > new_distance:
                     self.__distances[vertex_to] = new_distance
-                    self.__paths[vertex_to] = self.__paths[current] + [current]
-                    self.__previous[vertex_to] = current
+                    self.__paths[vertex_to] = self.__paths[current_vertex] + [
+                        current_vertex
+                    ]
+                    self.__previous[vertex_to] = current_vertex
 
-            self.__visited.add(current)
-            self.__append_table_data(current)
+            self.__visited.add(current_vertex)
+            self.__append_table_data(current_vertex)
 
         return (
             self.__formatted_table(),
@@ -64,17 +66,17 @@ class Dijkstra:
             self.__distances[finish],
         )
 
-    def __append_table_data(self, current):
+    def __append_table_data(self, current_vertex):
         self.__table_data.append(
-            [current]
+            [current_vertex]
             + [
-                self.__format_table_data(vertex, weight, current)
+                self.__format_table_data(vertex, weight, current_vertex)
                 for vertex, weight in self.__distances.items()
             ]
         )
 
-    def __format_table_data(self, vertex, weight, current):
-        if vertex == current and weight != float("infinity"):
+    def __format_table_data(self, vertex, weight, current_vertex):
+        if vertex == current_vertex and weight != float("infinity"):
             self.__temp.append(vertex)
             return f"|{''.join(self.__superscript_map[i] for i in str(weight))}{self.__previous[vertex]}|"
 
