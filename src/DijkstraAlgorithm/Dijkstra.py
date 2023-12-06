@@ -1,6 +1,5 @@
 import networkx as nx
 from matplotlib import pyplot as plt
-
 from tabulate import tabulate
 
 from DijkstraAlgorithm.Graph import Graph

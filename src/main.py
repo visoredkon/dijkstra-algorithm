@@ -1,5 +1,4 @@
 from DijkstraAlgorithm.Graph import Graph
-
 from DijkstraAlgorithm.Dijkstra import Dijkstra
 
 if __name__ == "__main__":
