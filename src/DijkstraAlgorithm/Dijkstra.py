@@ -27,6 +27,9 @@ class Dijkstra:
         self.__distances[start] = 0
         self.__previous[start] = start
 
+        if print_table:
+            print(f"\nVertex saat ini: {start}")
+
         for _ in self.__graph.get_vertices():
             unvisited_vertices = set(self.__distances) - self.__visited
             current_vertex = min(unvisited_vertices, key=self.__distances.get)
@@ -48,6 +51,10 @@ class Dijkstra:
 
             if print_table:
                 print(self.__formatted_table())
+                unvisited_vertices = set(self.__distances) - self.__visited
+                if unvisited_vertices:
+                    next_vertex = min(unvisited_vertices, key=self.__distances.get)
+                    print(f"\nVertex saat ini: {next_vertex}")
 
         return self.__formatted_path(self.__paths[finish] + [finish])
 
