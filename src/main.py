@@ -28,10 +28,8 @@ if __name__ == "__main__":
 
     dijkstra = Dijkstra(graph)
 
-    table, path, weight = dijkstra.find_path(start="A", finish="I")
+    path = dijkstra.find_path(start="A", finish="I", print_table=True)
 
-    print(table)
-
-    print(f"\nShortest path: {path}\nWeight: {weight}")
+    print(f"\n{path}")
 
     dijkstra.visualize_graph(finish="I")

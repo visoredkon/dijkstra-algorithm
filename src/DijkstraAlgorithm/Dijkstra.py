@@ -21,21 +21,7 @@ class Dijkstra:
 
         self.__superscript_map = dict(zip("0123456789", "⁰¹²³⁴⁵⁶⁷⁸⁹"))
 
-    def __reinitialize(self):
-        self.__table_header = ["Visited"] + [
-            f"   {vertex}   " for vertex in self.__graph.get_vertices()
-        ]
-        self.__table_data = []
-        self.__temp = []
-
-        self.__distances = {
-            vertex: float("infinity") for vertex in self.__graph.get_vertices()
-        }
-        self.__paths = {vertex: [] for vertex in self.__graph.get_vertices()}
-        self.__visited = set()
-        self.__previous = {vertex: None for vertex in self.__graph.get_vertices()}
-
-    def find_path(self, start, finish):
+    def find_path(self, start, finish, print_table=False):
         self.__reinitialize()
 
         self.__distances[start] = 0
@@ -60,43 +46,10 @@ class Dijkstra:
             self.__visited.add(current_vertex)
             self.__append_table_data(current_vertex)
 
-        return (
-            self.__formatted_table(),
-            " → ".join(self.__paths[finish] + [finish]),
-            self.__distances[finish],
-        )
+            if print_table:
+                print(self.__formatted_table())
 
-    def __append_table_data(self, current_vertex):
-        self.__table_data.append(
-            [current_vertex]
-            + [
-                self.__format_table_data(vertex, weight, current_vertex)
-                for vertex, weight in self.__distances.items()
-            ]
-        )
-
-    def __format_table_data(self, vertex, weight, current_vertex):
-        if vertex == current_vertex and weight != float("infinity"):
-            self.__temp.append(vertex)
-            return f"|{''.join(self.__superscript_map[i] for i in str(weight))}{self.__previous[vertex]}|"
-
-        if vertex in self.__temp:
-            return " "
-
-        return (
-            "∞"
-            if weight == float("infinity")
-            else f" {''.join(self.__superscript_map[i] for i in str(weight))}{self.__previous[vertex]} "
-        )
-
-    def __formatted_table(self):
-        return tabulate(
-            self.__table_data,
-            headers=self.__table_header,
-            stralign="center",
-            numalign="center",
-            tablefmt="rounded_grid",
-        )
+        return self.__formatted_path(self.__paths[finish] + [finish])
 
     def visualize_graph(self, finish):
         G = self.__build_networkx_graph()
@@ -115,6 +68,69 @@ class Dijkstra:
 
         plt.tight_layout()
         plt.show()
+
+    # --- Reinitialize Private Method
+
+    def __reinitialize(self):
+        self.__table_header = ["Visited"] + [
+            f"   {vertex}   " for vertex in self.__graph.get_vertices()
+        ]
+        self.__table_data = []
+        self.__table_data_temp = []
+
+        self.__distances = {
+            vertex: float("infinity") for vertex in self.__graph.get_vertices()
+        }
+        self.__paths = {vertex: [] for vertex in self.__graph.get_vertices()}
+        self.__visited = set()
+        self.__previous = {vertex: None for vertex in self.__graph.get_vertices()}
+
+    # --- Formatted Output Private Method
+
+    def __formatted_path(self, path):
+        output = "Shortest path:"
+
+        for i in range(1, len(path) + 1):
+            sub_path = path[:i]
+            output += (
+                f"\n{i}. {' → '.join(sub_path)} : {self.__distances[sub_path[-1]]}"
+            )
+
+        return output
+
+    def __formatted_table(self):
+        return tabulate(
+            self.__table_data,
+            headers=self.__table_header,
+            stralign="center",
+            numalign="center",
+            tablefmt="rounded_grid",
+        )
+
+    def __append_table_data(self, current_vertex):
+        self.__table_data.append(
+            [current_vertex]
+            + [
+                self.__format_table_data(vertex, weight, current_vertex)
+                for vertex, weight in self.__distances.items()
+            ]
+        )
+
+    def __format_table_data(self, vertex, weight, current_vertex):
+        if vertex == current_vertex and weight != float("infinity"):
+            self.__table_data_temp.append(vertex)
+            return f"|{''.join(self.__superscript_map[i] for i in str(weight))}{self.__previous[vertex]}|"
+
+        if vertex in self.__table_data_temp:
+            return " "
+
+        return (
+            "∞"
+            if weight == float("infinity")
+            else f" {''.join(self.__superscript_map[i] for i in str(weight))}{self.__previous[vertex]} "
+        )
+
+    # --- Graph Private Method
 
     def __build_networkx_graph(self):
         G = nx.Graph()
