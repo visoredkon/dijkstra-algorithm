@@ -36,15 +36,15 @@ class Dijkstra:
             current_edges = self.__graph.get_edges()[current_vertex]
 
             for edge in current_edges:
-                vertex_to, weight = edge["to"], edge["weight"]
+                next_vertex, weight = edge["to"], edge["weight"]
                 new_distance = self.__distances[current_vertex] + weight
 
-                if self.__distances[vertex_to] > new_distance:
-                    self.__distances[vertex_to] = new_distance
-                    self.__paths[vertex_to] = self.__paths[current_vertex] + [
+                if self.__distances[next_vertex] > new_distance:
+                    self.__distances[next_vertex] = new_distance
+                    self.__paths[next_vertex] = self.__paths[current_vertex] + [
                         current_vertex
                     ]
-                    self.__previous[vertex_to] = current_vertex
+                    self.__previous[next_vertex] = current_vertex
 
             self.__visited.add(current_vertex)
             self.__append_table_data(current_vertex)
