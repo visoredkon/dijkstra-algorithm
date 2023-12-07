@@ -129,7 +129,7 @@ class Dijkstra:
     def __format_table_data(self, vertex, weight, current_vertex):
         if vertex == current_vertex and weight != float("infinity"):
             self.__table_data_temp.append(vertex)
-            return f"|{''.join(self.__superscript_map[i] for i in str(weight))}{self.__previous[vertex]}|"
+            return f"\033[1;31m|{''.join(self.__superscript_map[i] for i in str(weight))}{self.__previous[vertex]}|\033[39m"
 
         if vertex in self.__table_data_temp:
             return " "
