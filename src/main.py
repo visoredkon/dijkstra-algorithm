@@ -32,4 +32,15 @@ if __name__ == "__main__":
 
     print(f"\n{path}")
 
-    dijkstra.visualize_graph(finish="I")
+    graph_position = {
+        "A": (0, 0),
+        "B": (2, 0),
+        "C": (1, 1),
+        "D": (1, -1),
+        "E": (3, 1),
+        "F": (3, -1),
+        "G": (4, 0),
+        "I": (5, -1),
+    }
+
+    dijkstra.visualize_graph(finish="I", custom_position=graph_position)

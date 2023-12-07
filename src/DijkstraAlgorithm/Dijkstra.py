@@ -58,12 +58,14 @@ class Dijkstra:
 
         return self.__formatted_path(self.__paths[finish] + [finish])
 
-    def visualize_graph(self, finish):
+    def visualize_graph(self, finish, custom_position=False):
         G = self.__build_networkx_graph()
 
-        plt.figure("Dijkstra Algorithm", figsize=(10, 5))
+        plt.figure("Dijkstra Algorithm", figsize=(15, 5))
 
-        layout_position = nx.spring_layout(G, seed=28)
+        layout_position = (
+            nx.spring_layout(G, seed=28) if not custom_position else custom_position
+        )
         edge_labels = nx.get_edge_attributes(G, "weight")
 
         for i, title in zip(
@@ -75,6 +77,7 @@ class Dijkstra:
 
         plt.tight_layout()
         plt.show()
+        plt.clf()
 
     # --- Reinitialize Private Method
 
@@ -140,7 +143,7 @@ class Dijkstra:
     # --- Graph Private Method
 
     def __build_networkx_graph(self):
-        G = nx.Graph()
+        G = nx.DiGraph()
 
         G.add_edges_from(
             [
@@ -166,3 +169,4 @@ class Dijkstra:
         nx.draw_networkx_edges(
             G, position, edgelist=shortest_path_edges, edge_color="red", width=2
         )
+        nx.draw_networkx_nodes(G, position, nodelist=shortest_path, node_color="red")
